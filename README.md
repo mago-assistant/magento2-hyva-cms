@@ -24,6 +24,9 @@ Not in scope: editing or deleting existing components, and placing components on
   stays CSP-safe on `Hyva/default-csp`. `<img>` is not an allowed tag, so there are no hotlinked
   images; image fields get no default value.
 - An identifier that already exists is refused, never overwritten or suffixed.
+- Every field key must equal what the Hyvä editor derives from the label (`"USP 1 Text"` -> `usp_1_text`).
+  The editor rebuilds keys from labels whenever a component is saved there, which is also how it is
+  activated; any other key would be renamed while the template kept the old name.
 - The `hyva_cms` cache type is cleaned after a save.
 - The skill is hidden when `Hyva_CmsInstanceComponents` is disabled.
 
@@ -58,6 +61,8 @@ The skill relies on these Hyvä APIs; check that they still exist and behave the
   `identifier`, `label`, `category`, `template`, `declaration`; `getGenerationRules()`)
 - `Hyva\CmsInstanceComponents\Api\InstanceComponentRepositoryInterface` (`getByIdentifier()`
   throwing `NoSuchEntityException`, `save()`, `getList()`)
+- `normalizeFieldKey()` in `instance-components/view/adminhtml/templates/instance-components/js/handler.phtml`
+  (lowercase, whitespace to `_`, drop `[^a-z0-9_]`), mirrored in `CreateAction::assertKeysMatchLabels()`
 - cache type `hyva_cms`
 - ACL resources `Hyva_Cms::instance_component_view` / `_save`
 

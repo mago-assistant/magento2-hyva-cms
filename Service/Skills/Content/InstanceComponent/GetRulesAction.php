@@ -59,6 +59,8 @@ class GetRulesAction implements ActionInterface
     {
         return 'Write the component strictly within these rules; the same validator checks it again before the '
             . 'confirmation and before saving. Pick an identifier that is not in existing_identifiers. '
+            . 'Each field key must be its label in lowercase with spaces as underscores and other characters '
+            . 'dropped (label "USP 1 Text" -> key "usp_1_text"), because the Hyvä editor renames any other key. '
             . 'Use semantic HTML and keep it accessible (headings in order, alt-like text via aria-label where an '
             . 'element has no visible text). Prefer the theme\'s existing Tailwind utility classes over arbitrary '
             . 'values and hard-coded colours, so the component follows the store\'s design. The validator already '

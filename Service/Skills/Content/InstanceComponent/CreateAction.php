@@ -55,13 +55,11 @@ class CreateAction implements ActionInterface, ValidatingActionInterface
             'identifier' => [
                 'type' => 'string',
                 'description' => 'Unique component identifier: lowercase letters, numbers and hyphens, starting with '
-                    . 'a letter, 3-64 characters (e.g. "usp-bar")',
-                'required' => true,
+                    . 'a letter, 3-64 characters (e.g. "usp-bar") (required)',
             ],
             'label' => [
                 'type' => 'string',
-                'description' => 'Name shown in the editor\'s component picker',
-                'required' => true,
+                'description' => 'Name shown in the editor\'s component picker (required)',
             ],
             'category' => [
                 'type' => 'string',
@@ -73,8 +71,7 @@ class CreateAction implements ActionInterface, ValidatingActionInterface
             ],
             'fields' => [
                 'type' => 'array',
-                'description' => 'Editable fields, in the order the editor shows them',
-                'required' => true,
+                'description' => 'Editable fields, in the order the editor shows them (required)',
                 'items' => [
                     'type' => 'object',
                     'properties' => [
@@ -94,6 +91,7 @@ class CreateAction implements ActionInterface, ValidatingActionInterface
                             ],
                         ],
                         'default_value' => [
+                            'type' => ['string', 'boolean'],
                             'description' => 'Only for text, textarea, richtext (string), boolean (bool) and select '
                                 . '(an option value)',
                         ],
@@ -107,8 +105,8 @@ class CreateAction implements ActionInterface, ValidatingActionInterface
             ],
             'template' => [
                 'type' => 'string',
-                'description' => 'HTML template with one root element, using {field}, {#if field}...{#else}...{/if}',
-                'required' => true,
+                'description' => 'HTML template with one root element, using {field}, {#if field}...{#else}...{/if} '
+                    . '(required)',
             ],
         ];
     }
@@ -170,8 +168,9 @@ class CreateAction implements ActionInterface, ValidatingActionInterface
         try {
             // The unique key on identifier still refuses a component created since validate() ran.
             $saved = $this->repository->save($component);
-        } catch (LocalizedException $e) {
-            return ['error' => 'The component could not be saved: ' . $e->getMessage()];
+        } catch (LocalizedException) {
+            // The repository's message carries the raw SQL error; never hand that to the model.
+            return $this->findRefusal($params) ?? ['error' => 'The component could not be saved.'];
         }
         $this->cacheTypeList->cleanType(self::CACHE_TYPE);
 
@@ -195,11 +194,18 @@ class CreateAction implements ActionInterface, ValidatingActionInterface
      */
     private function validate(array $params): array
     {
-        $candidate = array_filter(
-            array_intersect_key($params, array_flip(self::CANDIDATE_KEYS)),
-            static fn ($value) => $value !== null
-        );
+        $isSet = static fn ($value) => $value !== null && $value !== '' && $value !== [];
+        $candidate = array_filter(array_intersect_key($params, array_flip(self::CANDIDATE_KEYS)), $isSet);
+        if (is_array($candidate['fields'] ?? null)) {
+            // Some providers fill in every schema property, so a text field arrives with "options": []
+            // or "classes": "". Hyvä refuses those keys outside select/image/link; empty means absent.
+            $candidate['fields'] = array_map(
+                static fn ($field) => is_array($field) ? array_filter($field, $isSet) : $field,
+                $candidate['fields']
+            );
+        }
         $validated = $this->validator->validate($candidate);
+        $this->assertKeysMatchLabels($validated['fields']);
 
         try {
             $this->repository->getByIdentifier((string)$validated['identifier']);
@@ -212,5 +218,37 @@ class CreateAction implements ActionInterface, ValidatingActionInterface
             . 'overwritten; choose another identifier.',
             $validated['identifier']
         ));
+    }
+
+    /**
+     * Refuse a field whose key is not what the Hyvä editor derives from its label
+     *
+     * The Instance Components editor rebuilds every key from the label when an admin saves the
+     * component (normalizeFieldKey() in instance-components/js/handler.phtml), and activating a
+     * component means saving it there. A key that differs is renamed on activation while the
+     * template keeps the old name, so that field silently stops rendering.
+     *
+     * @param array $fields The validator's normalised fields
+     * @return void
+     * @throws LocalizedException
+     */
+    private function assertKeysMatchLabels(array $fields): void
+    {
+        foreach ($fields as $field) {
+            $expected = (string)preg_replace(
+                '/[^a-z0-9_]/',
+                '',
+                (string)preg_replace('/\s+/u', '_', mb_strtolower((string)$field['label']))
+            );
+            if ($field['key'] !== $expected) {
+                throw new LocalizedException(__(
+                    'Field "%1" must use the key "%2": the Hyvä editor derives each key from its label (lowercase, '
+                    . 'spaces become underscores, other characters dropped) and renames any other key when the '
+                    . 'component is saved there. Use "%2" as key and in the template, or change the label.',
+                    $field['key'],
+                    $expected
+                ));
+            }
+        }
     }
 }

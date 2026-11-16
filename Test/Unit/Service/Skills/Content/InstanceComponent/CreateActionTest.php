@@ -11,6 +11,7 @@ use Hyva\CmsInstanceComponents\Api\Data\InstanceComponentInterfaceFactory;
 use Hyva\CmsInstanceComponents\Api\InstanceComponentRepositoryInterface;
 use Hyva\CmsInstanceComponents\Model\AiSafeDefinitionValidator;
 use Magento\Framework\App\Cache\TypeListInterface;
+use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Serialize\Serializer\Json;
 use MagoAssistant\HyvaCms\Service\Skills\Content\InstanceComponent\CreateAction;
@@ -87,5 +88,38 @@ class CreateActionTest extends TestCase
         $this->assertTrue($result['success']);
         $this->assertSame(7, $result['id']);
         $this->assertFalse($result['is_active']);
+    }
+
+    public function testEmptyPropertiesAProviderFillsInCountAsAbsent(): void
+    {
+        $this->repository->method('getByIdentifier')->willThrowException(new NoSuchEntityException());
+        $params = ['fields' => [
+            ['key' => 'text', 'type' => 'text', 'label' => 'Text', 'options' => [], 'classes' => '', 'default_value' => ''],
+        ], 'category' => ''] + self::VALID;
+
+        $this->assertNull($this->action->findRefusal($params));
+    }
+
+    public function testRefusesAKeyTheHyvaEditorWouldRenameOnSave(): void
+    {
+        $params = [
+            'fields' => [['key' => 'usp1_text', 'type' => 'text', 'label' => 'USP 1 Text']],
+            'template' => '<p>{usp1_text}</p>',
+        ] + self::VALID;
+
+        $this->assertStringContainsString('"usp_1_text"', $this->action->findRefusal($params)['error'] ?? '');
+    }
+
+    public function testSaveFailureNeverPassesTheSqlErrorOn(): void
+    {
+        $this->repository->method('getByIdentifier')->willThrowException(new NoSuchEntityException());
+        $this->repository->method('save')->willThrowException(
+            new CouldNotSaveException(__('SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry'))
+        );
+        $this->cacheTypeList->expects($this->never())->method('cleanType');
+
+        $error = $this->action->execute(self::VALID, 1)['error'] ?? '';
+
+        $this->assertSame('The component could not be saved.', $error);
     }
 }
