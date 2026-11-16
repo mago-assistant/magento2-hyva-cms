@@ -4,7 +4,7 @@
  */
 declare(strict_types=1);
 
-namespace MagoAssistant\HyvaCms\Service\Skills\InstanceComponent;
+namespace MagoAssistant\HyvaCms\Service\Skills\Content\InstanceComponent;
 
 use Hyva\CmsInstanceComponents\Api\AiSafeDefinitionValidatorInterface;
 use Hyva\CmsInstanceComponents\Api\Data\InstanceComponentInterfaceFactory;

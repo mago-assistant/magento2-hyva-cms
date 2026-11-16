@@ -4,7 +4,7 @@
  */
 declare(strict_types=1);
 
-namespace MagoAssistant\HyvaCms\Test\Unit\Service\Skills\InstanceComponent;
+namespace MagoAssistant\HyvaCms\Test\Unit\Service\Skills\Content\InstanceComponent;
 
 use Hyva\CmsInstanceComponents\Api\Data\InstanceComponentInterface;
 use Hyva\CmsInstanceComponents\Api\Data\InstanceComponentInterfaceFactory;
@@ -13,7 +13,7 @@ use Hyva\CmsInstanceComponents\Model\AiSafeDefinitionValidator;
 use Magento\Framework\App\Cache\TypeListInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Serialize\Serializer\Json;
-use MagoAssistant\HyvaCms\Service\Skills\InstanceComponent\CreateAction;
+use MagoAssistant\HyvaCms\Service\Skills\Content\InstanceComponent\CreateAction;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;

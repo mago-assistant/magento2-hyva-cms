@@ -4,7 +4,7 @@
  */
 declare(strict_types=1);
 
-namespace MagoAssistant\HyvaCms\Service\Skills;
+namespace MagoAssistant\HyvaCms\Service\Skills\Content;
 
 use Magento\Framework\AuthorizationInterface;
 use Magento\Framework\Module\Manager as ModuleManager;
