@@ -4,6 +4,10 @@
     <module name="MagoAssistant_HyvaCms">
         <sequence>
             <module name="MagoAssistant_Mago"/>
+            <module name="Magento_Cms"/>
+            <module name="Magento_MediaGalleryApi"/>
+            <module name="Hyva_CmsLiveviewEditor"/>
+            <module name="Hyva_CmsMagento"/>
             <module name="Hyva_CmsInstanceComponents"/>
         </sequence>
     </module>

@@ -5,13 +5,14 @@
         <arguments>
             <argument name="tools" xsi:type="array">
                 <item name="hyva_cms_instance_component" xsi:type="object">MagoAssistant\HyvaCms\Service\Skills\Content\InstanceComponent</item>
+                <item name="hyva_cms_content" xsi:type="object">MagoAssistant\HyvaCms\Service\Skills\Content\HyvaContent</item>
             </argument>
         </arguments>
     </type>
 
     <!--
         The actions are proxies: the registry builds every tool on each chat request, and the Hyvä
-        classes behind them only resolve while Hyva_CmsInstanceComponents is enabled. When it is
+        classes behind them only resolve while the Hyvä CMS modules are enabled. When they are
         disabled, isAvailable() drops the tool before an action does any work.
     -->
     <type name="MagoAssistant\HyvaCms\Service\Skills\Content\InstanceComponent">
@@ -19,6 +20,20 @@
             <argument name="actions" xsi:type="array">
                 <item name="get_rules" xsi:type="object">MagoAssistant\HyvaCms\Service\Skills\Content\InstanceComponent\GetRulesAction\Proxy</item>
                 <item name="create" xsi:type="object">MagoAssistant\HyvaCms\Service\Skills\Content\InstanceComponent\CreateAction\Proxy</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- Order matters for the shared id/type/revision parameter descriptions: the first action declaring one wins. -->
+    <type name="MagoAssistant\HyvaCms\Service\Skills\Content\HyvaContent">
+        <arguments>
+            <argument name="entities" xsi:type="object">MagoAssistant\HyvaCms\Service\HyvaCms\CmsEntities\Proxy</argument>
+            <argument name="actions" xsi:type="array">
+                <item name="list_components" xsi:type="object">MagoAssistant\HyvaCms\Service\Skills\Content\HyvaContent\ListComponentsAction\Proxy</item>
+                <item name="get" xsi:type="object">MagoAssistant\HyvaCms\Service\Skills\Content\HyvaContent\GetAction\Proxy</item>
+                <item name="find_images" xsi:type="object">MagoAssistant\HyvaCms\Service\Skills\Content\HyvaContent\FindImagesAction\Proxy</item>
+                <item name="save_draft" xsi:type="object">MagoAssistant\HyvaCms\Service\Skills\Content\HyvaContent\SaveDraftAction\Proxy</item>
+                <item name="publish" xsi:type="object">MagoAssistant\HyvaCms\Service\Skills\Content\HyvaContent\PublishAction\Proxy</item>
             </argument>
         </arguments>
     </type>
