@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="MagoAssistant\Mago\Service\Tool\ToolRegistry">
+        <arguments>
+            <argument name="tools" xsi:type="array">
+                <item name="hyva_cms_instance_component" xsi:type="object">MagoAssistant\HyvaCms\Service\Skills\InstanceComponent</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!--
+        The actions are proxies: the registry builds every tool on each chat request, and the Hyvä
+        classes behind them only resolve while Hyva_CmsInstanceComponents is enabled. When it is
+        disabled, isAvailable() drops the tool before an action does any work.
+    -->
+    <type name="MagoAssistant\HyvaCms\Service\Skills\InstanceComponent">
+        <arguments>
+            <argument name="actions" xsi:type="array">
+                <item name="get_rules" xsi:type="object">MagoAssistant\HyvaCms\Service\Skills\InstanceComponent\GetRulesAction\Proxy</item>
+                <item name="create" xsi:type="object">MagoAssistant\HyvaCms\Service\Skills\InstanceComponent\CreateAction\Proxy</item>
+            </argument>
+        </arguments>
+    </type>
+</config>
