@@ -9,13 +9,19 @@ namespace MagoAssistant\HyvaCms\Service\Skills\Content;
 use Magento\Framework\AuthorizationInterface;
 use Magento\Framework\Module\Manager as ModuleManager;
 use MagoAssistant\Mago\Api\Tool\AvailabilityAwareToolInterface;
+use MagoAssistant\Mago\Api\Tool\PresentableToolInterface;
 use MagoAssistant\Mago\Service\Skills\AbstractSkill;
 
 /**
  * Creates Hyvä CMS Instance Components from a description in the admin chat.
  */
-class InstanceComponent extends AbstractSkill implements AvailabilityAwareToolInterface
+class InstanceComponent extends AbstractSkill implements AvailabilityAwareToolInterface, PresentableToolInterface
 {
+    private const STATUS_MESSAGES = [
+        'get_rules' => 'Reading the Hyvä component rules...',
+        'create' => 'Creating the Hyvä instance component...',
+    ];
+
     public const ACL_VIEW = 'Hyva_Cms::instance_component_view';
     public const ACL_SAVE = 'Hyva_Cms::instance_component_save';
 
@@ -32,6 +38,21 @@ class InstanceComponent extends AbstractSkill implements AvailabilityAwareToolIn
     public function getName(): string
     {
         return 'hyva_cms_instance_component';
+    }
+
+    /**
+     * Without it the panel derives "Hyva cms instance component" from the tool name, which the card cuts off
+     *
+     * @return string
+     */
+    public function getDisplayName(): string
+    {
+        return 'Hyvä component';
+    }
+
+    public function getStatusMessage(string $action, array $input): ?string
+    {
+        return self::STATUS_MESSAGES[$action] ?? null;
     }
 
     public function isAvailable(): bool

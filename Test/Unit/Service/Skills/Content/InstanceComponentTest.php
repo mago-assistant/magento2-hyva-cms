@@ -36,6 +36,11 @@ class InstanceComponentTest extends TestCase
         $this->assertFalse($this->skill(false)->isAvailable());
     }
 
+    public function testDisplayNameFitsTheCardTitle(): void
+    {
+        $this->assertSame('Hyvä component', $this->skill(true)->getDisplayName());
+    }
+
     private function skill(bool $hyvaEnabled): InstanceComponent
     {
         $moduleManager = $this->createStub(ModuleManager::class);
